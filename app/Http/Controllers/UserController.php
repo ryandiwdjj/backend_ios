@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use App\Mail\EmailVerif;
 Use App\User;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -41,7 +46,8 @@ class UserController extends Controller
         $user = new User;
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->password = $request->password;
+        $user->password = Hash::make($request->password);
+        $user->email_token = base64_encode($request->email);
 
         $success = $user->save();
 
@@ -129,8 +135,21 @@ class UserController extends Controller
             if(!$success) {
                 return response()->json('Error Deleting', 500);
             }
-            else 
+            else
                 return response()->json('Success Delete', 200);
         }
+    }
+
+	public function mail($email)
+	{
+		Mail::to($email)->send(new EmailVerif($email));
+		return 'Email Sent';
+    }
+
+    public function verif($email_token)
+    {
+        $user = User::where('email_token', $email_token)->first();
+        $user->email_verified_at=Carbon::now();
+        $success=$user->save();
     }
 }
