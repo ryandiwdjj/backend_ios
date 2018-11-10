@@ -14,3 +14,8 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('emailverif/{email}', 'UserController@mail');
+Route::get('verification/{email_token}', ['as' => 'User.verif', 'uses'=>'UserController@verif']);
+
+
